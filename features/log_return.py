@@ -3,12 +3,15 @@ import numpy as np
 def log_return(df, symbol, timeframe):
     price_col = symbol + '__' + 'open_price'
 
-    if timeframe == "1M":
-        shift_length = 1
-    elif timeframe == "1D":
-        shift_length = 1440
-    elif timeframe == "6H":
-        shift_length = 360
+    number = int(timeframe[:-1])
+    unit = timeframe[-1]
+
+    if unit == "M":
+        shift_length = number
+    elif unit == "D":
+        shift_length = 1440 * number
+    elif unit == "H":
+        shift_length = 60 * number
     else:
         raise Exception("Unknown timeframe.")
 
