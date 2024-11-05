@@ -11,6 +11,7 @@ EDGES = {
     'z_score': ['open_price'],
     'volatility': [],
     'bb_low': ['open_price'],
+    'bb_high': ['open_price'],
     'macd': ['open_price'],
     'macd_diff': ['open_price'],
     'macd_signal': ['open_price'],
