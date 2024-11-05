@@ -8,5 +8,6 @@ EDGES = {
     'rsi': [],
     'momentum': ['open_price'],
     'simple_moving_average': [],
-    'z_score': ['open_price']
+    'z_score': ['open_price'],
+    'volatility': []
 }
