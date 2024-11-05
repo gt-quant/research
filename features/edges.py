@@ -9,5 +9,14 @@ EDGES = {
     'momentum': ['open_price'],
     'simple_moving_average': [],
     'z_score': ['open_price'],
-    'volatility': []
+    'volatility': [],
+    'bb_low': ['open_price'],
+    'macd': ['open_price'],
+    'macd_diff': ['open_price'],
+    'macd_signal': ['open_price'],
+    'price_change_rate': ['open_price'],
+    'rank_price': ['open_price'],
+    'ts_rank_price_1d' : ['open_price'],
+    'volume_ma' : ['volume']
+
 }
