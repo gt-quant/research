@@ -16,7 +16,7 @@ def find_all_beta(df, train_test_cut, symbols, beta_mode, return_timeframe, retu
         elif return_mode == "DIFF":
             suffix = f"diff_return__{return_timeframe}"
         else:
-            raise Exception("Unknown Returm Mode")
+            raise Exception("Unknown Return Mode")
         
         for symbol in symbols:
             train_df[f'{symbol}__open_price'] = train_df[f'{symbol}_price']
