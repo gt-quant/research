@@ -9,5 +9,5 @@ class AbstractFeature(ABC):
         pass
 
     @abstractmethod
-    def forward(self, df):
+    def get_feature(self, df):
         pass

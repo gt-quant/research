@@ -1,7 +1,7 @@
 import numpy as np
 import utilities.utils as utils
 
-from abstract_feature import AbstractFeature
+from .AbstractFeature import AbstractFeature
 
 class LogReturn(AbstractFeature):
     def __init__(self, symbol, timeframe):
@@ -9,12 +9,12 @@ class LogReturn(AbstractFeature):
         self.symbol = symbol
         self.timeframe = timeframe
 
-        parents = [
+        self.parents = [
             'OpenPrice' + '__' + symbol
         ]
 
     def get_parents(self):
-        return parents
+        return self.parents
 
     def get_feature(self, df):
         price_col = 'OpenPrice' + '__' + self.symbol
