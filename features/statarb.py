@@ -3,14 +3,13 @@ import utilities.utils as utils
 
 from .AbstractFeature import AbstractFeature
 
-class LogReturn(AbstractFeature):
-    def __init__(self, symbol1, symbol2, beta, intercept, std, timeframe):
+class Statarb(AbstractFeature):
+    def __init__(self, symbol1, symbol2, beta, intercept, std):
         self.symbol1 = symbol1
         self.symbol2 = symbol2
-        self.beta = beta
-        self.intercept = intercept
-        self.std = std
-        self.timeframe = timeframe
+        self.beta = float(beta)
+        self.intercept = float(intercept)
+        self.std = float(std)
 
         self.parents = [
             'OpenPrice' + '__' + symbol1,

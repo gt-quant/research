@@ -48,7 +48,8 @@ def get_feature_col(df, feature_name):
 if __name__ == "__main__":
     df = pd.DataFrame({
         'OpenPrice__ETHUSDT': [100, 105, 102, 110, 108],
+        'OpenPrice__BTCUSDT': [1,2,3,4,5],
     })
 
-    add_feature_col_inplace(df, "LogReturn__ETHUSDT_1M")
+    add_feature_col_inplace(df, "Statarb__ETHUSDT_BTCUSDT_1_1_1")
     print(df)
