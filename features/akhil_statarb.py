@@ -1,13 +1,34 @@
-def akhil_statarb(df, symbol1, symbol2, beta, intercept, std):
-    close1 = symbol1 + '__' + 'close_price'
-    close2 = symbol2 + '__' + 'close_price'
-    signal = df[close1] - (beta*df[close2] + intercept) # we expect signal == 0 on avg.
+import numpy as np
+import utilities.utils as utils
 
-    position_dollars = abs(df[close1]) + abs(df[close2]*beta) # $Transacted for 1 synthetic
-    signal = signal / position_dollars # Edge per dollars of position
+from .AbstractFeature import AbstractFeature
 
-    return signal
+class LogReturn(AbstractFeature):
+    def __init__(self, symbol1, symbol2, beta, intercept, std, timeframe):
+        self.symbol1 = symbol1
+        self.symbol2 = symbol2
+        self.beta = beta
+        self.intercept = intercept
+        self.std = std
+        self.timeframe = timeframe
 
-    # Desired position based on signal
-    position_volume = signal * (100/std) # Volume such that we do $100 worth of synthetic per std.
-    desired_position = {symbol1: -position_volume, symbol2: beta*position_volume}
+        self.parents = [
+            'OpenPrice' + '__' + symbol1,
+            'OpenPrice' + '__' + symbol2,
+        ]
+
+    def get_parents(self):
+        return self.parents
+
+    def get_feature(self, df):
+        prices1_col, prices2_col = self.get_parents()
+        signal = df[prices1_col] - (self.beta*df[prices2_col] + self.intercept) # we expect signal == 0 on avg.
+
+        position_dollars = abs(df[prices1_col]) + abs(df[prices2_col]*self.beta) # dollars Transacted for 1 synthetic
+        signal = signal / position_dollars # Edge per dollars of position
+
+        return signal
+    
+        # Desired position based on signal
+        position_volume = signal * (100/self.std) # Volume such that we do $100 worth of synthetic per std.
+        desired_position = {symbol1: -position_volume, symbol2: self.beta*position_volume}
