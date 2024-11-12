@@ -47,6 +47,23 @@ def find_beta(df, y_col, x_col):
     # print(f'Coefficient: {model.coef_[0]}') 
     return model.coef_[0]
 
+def find_rolling_beta(df, y_col, x_col, window_size):
+    df_cleaned = df[[x_col, y_col]].dropna()
+    X = df_cleaned[x_col]
+    y = df_cleaned[y_col]
+    X_roll_sum = X.rolling(window=window_size, min_periods=1).sum()
+    y_roll_sum = y.rolling(window=window_size, min_periods=1).sum()
+    X2_roll_sum = (X ** 2).rolling(window=window_size, min_periods=1).sum()
+    Xy_roll_sum = (X * y).rolling(window=window_size, min_periods=1).sum()
+
+    # Compute beta (slope of regression line) for each window
+    beta = (Xy_roll_sum - (X_roll_sum * y_roll_sum) / window_size) / (X2_roll_sum - (X_roll_sum ** 2) / window_size)
+    
+    # # Fill NaNs in beta with 0 to avoid issues at the beginning
+    # beta = beta.fillna(0)
+
+    return beta
+
 class BackTester():
 
     # Assuming backtest_df has columns with X_price, X_pos, and BTCUSDT_price
