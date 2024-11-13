@@ -2,3 +2,4 @@ features/__pycache__/*
 __pycache__/
 .DS_Store
 *__pycache__*
+*.csv
