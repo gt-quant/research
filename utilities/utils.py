@@ -7,5 +7,7 @@ def parse_time(str):
         return 60 * int(str[0:-1])
     elif str[-1] == "D":
         return 1440 * int(str[0:-1])
+    elif str[-1] == "W":
+        return 7 * 1440 * int(str[0:-1])
     else:
         raise Exception("Unknown Timeframe")

@@ -4,10 +4,9 @@ import utilities.utils as utils
 from .AbstractFeature import AbstractFeature
 
 class PriceChangeRate(AbstractFeature):
-    def __init__(self, symbol, timeframe, retInterval):
+    def __init__(self, symbol, retInterval):
 
         self.symbol = symbol
-        self.timeframe = timeframe
         self.retInterval = retInterval
 
         self.parents = [
