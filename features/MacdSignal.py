@@ -3,7 +3,7 @@ import utilities.utils as utils
 import ta
 from .AbstractFeature import AbstractFeature
 
-class Macd(AbstractFeature):
+class MacdSignal(AbstractFeature):
     def __init__(self, symbol, timeframe):
 
         self.symbol = symbol
