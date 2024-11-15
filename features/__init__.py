@@ -16,4 +16,4 @@ from .RSI import RSI
 from .TSRankPrice1D import TSRankPrice1D
 from .VolumeMA import VolumeMA
 from .statarb import Statarb
-from .Carter_Beta import Carter_Beta
+from .RollingBeta import RollingBeta

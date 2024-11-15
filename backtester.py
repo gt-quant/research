@@ -1,39 +1,49 @@
 import numpy as np
 import pandas as pd
 
-from feature_factory import add_feature_col_inplace
+from feature_factory import add_feature_col_inplace, get_feature_col
 
 from sklearn.linear_model import LinearRegression
+import matplotlib.pyplot as plt
 
 def find_all_beta(df, train_test_cut, symbols, beta_mode, return_timeframe, return_mode):
 
     train_df = df[:train_test_cut].copy()
     # test_df = backtest_df[train_test_cut:].copy()
 
-    if return_timeframe in ['1M', '1D']:
-        if return_mode == "LOG":
-            suffix = f"log_return__{return_timeframe}"
-        elif return_mode == "DIFF":
-            suffix = f"diff_return__{return_timeframe}"
-        else:
-            raise Exception("Unknown Return Mode")
-        
-        for symbol in symbols:
-            train_df[f'{symbol}__open_price'] = train_df[f'{symbol}_price']
-            add_feature_col_inplace(train_df, f'{symbol}__{suffix}')
-
-        train_df[f'BTCUSDT__open_price'] = train_df[f'BTCUSDT_price']
-        add_feature_col_inplace(train_df, f'BTCUSDT__{suffix}')
-
-    else:
-        raise Exception("Unknown Timeframe")
-
     beta_df = pd.DataFrame()
 
     if beta_mode == "FIXED":
+        if return_timeframe in ['1M', '1D']:
+            if return_mode == "LOG":
+                feat = "LogReturn"
+            elif return_mode == "DIFF":
+                feat = "LinReturn"
+            else:
+                raise Exception("Unknown Return Mode")
+            
+            for symbol in symbols:
+                train_df[f'OpenPrice__{symbol}'] = train_df[f'{symbol}_price']
+                add_feature_col_inplace(train_df, f'{feat}__{symbol}_{return_timeframe}')
+
+            train_df[f'OpenPrice__BTCUSDT'] = train_df[f'BTCUSDT_price']
+            add_feature_col_inplace(train_df, f'{feat}__BTCUSDT_{return_timeframe}')
+
+        else:
+            raise Exception("Unknown Timeframe")
+
         for symbol in symbols:
             beta = find_beta(train_df, f'{symbol}__{suffix}', f'BTCUSDT__{suffix}')
             beta_df[f'{symbol}_beta'] = pd.Series(beta, index=df.index)
+
+    elif beta_mode == "CARTER":
+        temp_df = pd.DataFrame()
+        temp_df[f'OpenPrice__BTCUSDT'] = df[f'BTCUSDT_price']
+        for symbol in symbols:
+            temp_df[f'OpenPrice__{symbol}'] = df[f'{symbol}_price']
+            beta_df[f'{symbol}_beta'] = get_feature_col(temp_df, f'RollingBeta__{symbol}_BTCUSDT_10080')
+    else:
+        raise Exception("Unknown Mode")
     
     return beta_df
 
@@ -70,7 +80,7 @@ class BackTester():
     # All abs(X_pos) in the same row sum to less than 1
     def __init__(self, backtest_df, train_test_cut=None):
         FEE_RATE = 0.00055
-        BETA_MODE = "FIXED"
+        BETA_MODE = "CARTER"
 
         if train_test_cut is None:
             train_test_cut = backtest_df.index[int(0.8 * len(backtest_df))]
@@ -84,16 +94,27 @@ class BackTester():
         beta_df = find_all_beta(backtest_df, train_test_cut, trading_symbols, BETA_MODE, "1D", 'DIFF')
         beta_df.plot()
 
+        # display(beta_df.info())
+        # display(beta_df.describe())
+        # print((beta_df==0.0).sum())
+
         df = backtest_df
         result_df = pd.DataFrame()
+
+        # print(f"NaN 0: {df[[col for col in df.columns if col[-4:] in ['_pos', 'rice']]].isna().sum().sum()}")
+        # print(f"NaN 0.1: {beta_df.isna().sum().sum()}")
+        # print(df.shape, beta_df.shape)
 
         for symbol in trading_symbols:
 
             # Unit is number of shares
-            result_df[f'{symbol}_actual_pos'] = df[f'{symbol}_pos'] * (1.0 / df[f'{symbol}_price']) * (1.0 / (1+beta_df[f'{symbol}_beta']))
-            result_df[f'{symbol}_hedge_pos'] = df[f'{symbol}_pos'] * (1.0 / df['BTCUSDT_price']) * (1.0 / (1+beta_df[f'{symbol}_beta'])) * -1.0 * beta_df[f'{symbol}_beta']
+            result_df[f'{symbol}_actual_pos'] = df[f'{symbol}_pos'] * (1.0 / df[f'{symbol}_price']) * (1.0 / (1.0+abs(beta_df[f'{symbol}_beta'])))
+            # print(f"NaN 1: {result_df.isna().sum().sum()}")
+            result_df[f'{symbol}_hedge_pos'] = df[f'{symbol}_pos'] * (1.0 / df['BTCUSDT_price']) * (1.0 / (1.0+abs(beta_df[f'{symbol}_beta']))) * -1.0 * beta_df[f'{symbol}_beta']
+            # print(f"NaN 2: {result_df.isna().sum().sum()}")
 
         result_df['BTCUSDT_actual_pos'] = result_df.filter(items=[f'{s}_hedge_pos' for s in trading_symbols]).sum(axis=1)
+        # print(f"NaN 3: {result_df.isna().sum().sum()}")
 
         # Trade Cost Calculation
         for symbol in trading_symbols:
@@ -124,3 +145,15 @@ class BackTester():
     
     def plot_individual_pnl(self):
         self.result_df[[f'{s}_cum_pnl' for s in self.trading_symbols] + ['hedge_cum_pnl', 'total_pnl', 'trade_cost_pnl']].plot()
+        plt.xticks(rotation=45, ha='right')  # Rotate labels by 45 degrees and align to the right
+
+        # Optionally, adjust figure size
+        plt.figure(figsize=(12, 6))  # Change the size of the figure to make it more readable
+        plt.legend(loc='upper left', bbox_to_anchor=(1, 1))
+
+        plt.tight_layout()
+        # Show the plot
+        plt.show()
+    
+    def get_result_df(self):
+        return self.result_df

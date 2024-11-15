@@ -27,8 +27,12 @@ def _get_feature_col(df, feature_name):
     #     if not parent_feature_name in df.columns:
     #         add_feature_col_inplace(df, parent_feature_name)
 
-    feature_class = getattr(features, feature)
-    # print(dir(features))
+    try:
+        feature_class = getattr(features, feature)
+    except Exception as e:
+        print(f"Feature: {feature_name}")
+        print(f"An error occurred: {e}")
+
     feature_obj = feature_class(*params)
 
     parents = feature_obj.get_parents()

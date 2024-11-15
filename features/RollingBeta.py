@@ -20,8 +20,8 @@ class RollingBeta(AbstractFeature):
         price_col_symbol = 'OpenPrice' + '__' + self.symbol
         price_col_benchmark = 'OpenPrice' + '__' + self.benchmark_symbol
         
-        returns_symbol = df[price_col_symbol] - df[price_col_symbol].shift(1)
-        returns_benchmark = df[price_col_benchmark] - df[price_col_benchmark].shift(1)
+        returns_symbol = (df[price_col_symbol] - df[price_col_symbol].shift(1440)) / df[price_col_symbol].shift(1440)
+        returns_benchmark = (df[price_col_benchmark] - df[price_col_benchmark].shift(1440)) / df[price_col_benchmark].shift(1440)
 
         beta = rolling_linear_regression(returns_benchmark, returns_symbol, int(self.window_size))
 
