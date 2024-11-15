@@ -65,7 +65,6 @@ def find_rolling_beta(df, y_col, x_col, window_size):
     return beta
 
 class BackTester():
-
     # Assuming backtest_df has columns with X_price, X_pos, and BTCUSDT_price
     # X_pos has unit of dollars (which is the same as percentage bc we have total balance of 1 dollar)
     # All abs(X_pos) in the same row sum to less than 1
