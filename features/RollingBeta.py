@@ -2,7 +2,7 @@ import numpy as np
 import utilities.utils as utils
 from .AbstractFeature import AbstractFeature
 
-class Carter_Beta(AbstractFeature):
+class RollingBeta(AbstractFeature):
     def __init__(self, symbol, benchmark_symbol, window_size):
         self.symbol = symbol
         self.benchmark_symbol = benchmark_symbol
