@@ -6,7 +6,6 @@ class Carter_Beta(AbstractFeature):
     def __init__(self, symbol, benchmark_symbol, window_size):
         self.symbol = symbol
         self.benchmark_symbol = benchmark_symbol
-        print(window_size)
         self.window_size = window_size
 
         self.parents = [
@@ -34,8 +33,6 @@ def rolling_linear_regression(X, y, window_size):
     X2_roll_sum = (X ** 2).rolling(window=window_size, min_periods=1).sum()
     Xy_roll_sum = (X * y).rolling(window=window_size, min_periods=1).sum()
 
-    print(X)
-    print(X_roll_sum)
     # Compute beta (slope of regression line) for each window
     beta = (Xy_roll_sum - (X_roll_sum * y_roll_sum) / window_size) / (X2_roll_sum - (X_roll_sum ** 2) / window_size)
     
