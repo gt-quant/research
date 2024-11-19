@@ -2,5 +2,7 @@ features/__pycache__/*
 __pycache__/
 .DS_Store
 *__pycache__*
-gio/*
 *.csv
+data/*
+market_neutral/*
+gio/historic_bybit/*

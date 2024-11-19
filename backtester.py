@@ -5,6 +5,7 @@ from feature_factory import add_feature_col_inplace, get_feature_col
 
 from sklearn.linear_model import LinearRegression
 import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
 
 def find_all_beta(df, train_test_cut, symbols, beta_mode, return_timeframe, return_mode):
 
@@ -84,6 +85,8 @@ class BackTester():
 
         if train_test_cut is None:
             train_test_cut = backtest_df.index[int(0.8 * len(backtest_df))]
+        
+        self.train_test_cut = train_test_cut
 
         trading_symbols = [col[:-4] for col in backtest_df.columns if col[-4:] == '_pos']
 
@@ -144,15 +147,14 @@ class BackTester():
         self.result_df = result_df
     
     def plot_individual_pnl(self):
+        self.result_df.index = pd.to_datetime(self.result_df.index)
+
+        plt.figure(figsize=(100, 80))  # Change the size of the figure to make it more readable
         self.result_df[[f'{s}_cum_pnl' for s in self.trading_symbols] + ['hedge_cum_pnl', 'total_pnl', 'trade_cost_pnl']].plot()
         plt.xticks(rotation=45, ha='right')  # Rotate labels by 45 degrees and align to the right
 
-        # Optionally, adjust figure size
-        plt.figure(figsize=(12, 6))  # Change the size of the figure to make it more readable
+        plt.axvline(x=pd.to_datetime(self.train_test_cut), color='red', linestyle='--')
         plt.legend(loc='upper left', bbox_to_anchor=(1, 1))
-
-        plt.tight_layout()
-        # Show the plot
         plt.show()
     
     def get_result_df(self):
