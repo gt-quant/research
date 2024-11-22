@@ -95,7 +95,7 @@ class BackTester():
         
         # Calculate Beta
         beta_df = find_all_beta(backtest_df, train_test_cut, trading_symbols, BETA_MODE, "1D", 'DIFF')
-        beta_df.plot()
+        # beta_df.plot()
 
         # display(beta_df.info())
         # display(beta_df.describe())
