@@ -9,7 +9,7 @@ from tqdm.asyncio import tqdm_asyncio
 
 class DataLibrary():
 
-    def __init__(self, coins, DIRECTORY = 'data', BATCH_SIZE = 20, interval = 5, 
+    def __init__(self, coins=["BTCUSDT"], DIRECTORY = 'data', BATCH_SIZE = 20, interval = 5, 
                  start_time = datetime(2024, 6, 1, 0, 0), end_time = datetime(2024, 12, 1, 0, 0)):
         self.symbols = coins
         self.DIRECTORY = DIRECTORY
@@ -18,6 +18,7 @@ class DataLibrary():
         self.start_time = start_time
         self.end_time = end_time
         self.dataframes = []
+        # self.combined_df = self.fetch_symbols()
     
     
     def processDFS(self):
@@ -119,6 +120,6 @@ class DataLibrary():
             
             await tqdm_asyncio.gather(*tasks, desc="Processing symbols")
 
-        combined_df = self.processDFS(self)
+        combined_df = self.processDFS()
         print(combined_df)
         return combined_df
