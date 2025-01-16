@@ -79,9 +79,11 @@ class BackTester():
     # Assuming backtest_df has columns with X_price, X_pos, and BTCUSDT_price
     # X_pos has unit of dollars (which is the same as percentage bc we have total balance of 1 dollar)
     # All abs(X_pos) in the same row sum to less than 1
-    def __init__(self, backtest_df, train_test_cut=None):
-        FEE_RATE = 0.00055
+    def __init__(self, backtest_df, train_test_cut=None, holding_period=1, fee_rate=0.00055):
+        # FEE_RATE = 0.00055
         BETA_MODE = "CARTER"
+
+        HEDGE_RATE = 0.0
 
         if train_test_cut is None:
             train_test_cut = backtest_df.index[int(0.8 * len(backtest_df))]
@@ -95,7 +97,7 @@ class BackTester():
         
         # Calculate Beta
         beta_df = find_all_beta(backtest_df, train_test_cut, trading_symbols, BETA_MODE, "1D", 'DIFF')
-        beta_df.plot()
+        # beta_df.plot()
 
         # display(beta_df.info())
         # display(beta_df.describe())
@@ -109,12 +111,37 @@ class BackTester():
         # print(df.shape, beta_df.shape)
 
         for symbol in trading_symbols:
+            beta_df[f'{symbol}_beta'] = beta_df[f'{symbol}_beta'] * HEDGE_RATE
 
             # Unit is number of shares
             result_df[f'{symbol}_actual_pos'] = df[f'{symbol}_pos'] * (1.0 / df[f'{symbol}_price']) * (1.0 / (1.0+abs(beta_df[f'{symbol}_beta'])))
             # print(f"NaN 1: {result_df.isna().sum().sum()}")
             result_df[f'{symbol}_hedge_pos'] = df[f'{symbol}_pos'] * (1.0 / df['BTCUSDT_price']) * (1.0 / (1.0+abs(beta_df[f'{symbol}_beta']))) * -1.0 * beta_df[f'{symbol}_beta']
             # print(f"NaN 2: {result_df.isna().sum().sum()}")
+        
+        # if holding_period > 1:
+        #     for symbol in trading_symbols:
+        #         for i in range(len(result_df)):
+        #             if i % holding_period != 0:
+        #                 col_idx = result_df.columns.get_loc(f'{symbol}_actual_pos')
+        #                 result_df.iloc[i, col_idx] = result_df.iloc[i-1, col_idx]
+        #                 col_idx = result_df.columns.get_loc(f'{symbol}_hedge_pos')
+        #                 result_df.iloc[i, col_idx] = result_df.iloc[i-1, col_idx]
+
+        # mask = (result_df.reset_index().index.to_series().index % holding_period == 0)
+
+        self.gg_dict = {}
+        
+        for symbol in trading_symbols:
+            change_mask = (df.iloc[::holding_period, :][f'{symbol}_pos'] != df.iloc[::holding_period, :][f'{symbol}_pos'].shift(1)).reindex(df.index, fill_value=False)
+            # zero_mask = df[f'{symbol}_pos'] != 0.0
+
+            # mask = change_mask & zero_mask
+            mask = change_mask
+
+            self.gg_dict[symbol] = change_mask
+            result_df[f'{symbol}_actual_pos'] = result_df[f'{symbol}_actual_pos'].where(mask, pd.NA).ffill()
+            result_df[f'{symbol}_hedge_pos'] = result_df[f'{symbol}_hedge_pos'].where(mask, pd.NA).ffill()
 
         result_df['BTCUSDT_actual_pos'] = result_df.filter(items=[f'{s}_hedge_pos' for s in trading_symbols]).sum(axis=1)
         # print(f"NaN 3: {result_df.isna().sum().sum()}")
@@ -122,10 +149,10 @@ class BackTester():
         # Trade Cost Calculation
         for symbol in trading_symbols:
             result_df[f'{symbol}_traded'] = abs(result_df[f'{symbol}_actual_pos'] - result_df[f'{symbol}_actual_pos'].shift(1, fill_value=0.0))
-            result_df[f'{symbol}_trade_cost'] = result_df[f'{symbol}_traded'] * df[f'{symbol}_price'] * FEE_RATE
+            result_df[f'{symbol}_trade_cost'] = result_df[f'{symbol}_traded'] * df[f'{symbol}_price'] * fee_rate
         result_df['main_trade_cost'] = result_df.filter(items=[f'{s}_trade_cost' for s in trading_symbols]).sum(axis=1)
         result_df['hedge_traded'] = abs(result_df['BTCUSDT_actual_pos'] - result_df['BTCUSDT_actual_pos'].shift(1, fill_value=0.0))
-        result_df['hedge_trade_cost'] = result_df['hedge_traded'] * df['BTCUSDT_price'] * FEE_RATE
+        result_df['hedge_trade_cost'] = result_df['hedge_traded'] * df['BTCUSDT_price'] * fee_rate
 
         result_df['total_trade_cost'] = result_df['main_trade_cost'].cumsum() + result_df['hedge_trade_cost'].cumsum()
 
