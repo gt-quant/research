@@ -86,8 +86,8 @@ def download_orderbook_data(start_date, end_date, symbols, save_directory):
                 print(f"Data for {symbol} on {date_str} already exists. Skipping download.")
 
 if __name__ == "__main__":
-    start_date = datetime(2025, 1, 11)
-    end_date = datetime(2025, 1, 13)
-    symbols = ['ARCUSDT']
+    start_date = datetime(2025, 3, 2)
+    end_date = datetime(2025, 3, 3)
+    symbols = ['BANUSDT']
     save_directory = "data/trades"
     download_orderbook_data(start_date, end_date, symbols, save_directory)

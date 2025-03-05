@@ -59,7 +59,7 @@ class EventLoop:
         """
         priority = {
             'OB1': 2, 
-            'OB50': 1, 
+            'OB500': 1, 
             'trades': 0
         }
         for packet in iterator:
@@ -152,31 +152,27 @@ class DataLogger:
 if __name__ == "__main__":
     # DIR = 'gio/historic_bybit/historical_orderbook'
     DIR = 'data'
-    date = "20250111"
+    date = "20250302"
     symbols = [
-        'BTCUSDT', 
-        'ETHUSDT', 
-        'ARCUSDT', 
-        'ARCUSDT'
+        'BANUSDT', 
+        'BANUSDT'
     ]
     ob_symbols = symbols[:3]
     categories = [
-        'OB1', 
-        'OB1', 
-        'OB50', 
+        'OB500', 
         'trades'
     ]
     simulator = Simulator(DIR, date, symbols, categories, ob_symbols)
 
     dataLogger = DataLogger(
-        f'output_{date}.csv',
-        "time,btc_mid,eth_mid,arc_mid,arc_bp50,arc_ap50,arc_trade_side,arc_trade_size,arc_trade_price\n"
+        f'simulation_data/output_{date}.csv',
+        "time,ban_mid,ban_bp50,ban_ap50,ban_trade_side,ban_trade_size,ban_trade_price\n"
     )
     def process(state, is_trade):
         # state.print()
-        ob_btc = state.orderbooks['BTCUSDT']
-        ob_eth = state.orderbooks['ETHUSDT']
-        ob_arc = state.orderbooks['ARCUSDT']
+        # ob_btc = state.orderbooks['BTCUSDT']
+        # ob_eth = state.orderbooks['ETHUSDT']
+        ob_ban = state.orderbooks['BANUSDT']
 
         if is_trade:
             dataLogger.add_line([
@@ -185,14 +181,12 @@ if __name__ == "__main__":
                 *state.trades.last_trade
             ])
         else:
-            arc_bp50, arc_ap50 = ob_arc.get_size_price(50.0)
+            ban_bp50, ban_ap50 = ob_ban.get_size_price(50.0)
             dataLogger.add_line([
                 state.time,
-                ob_btc.get_mid(),
-                ob_eth.get_mid(),
-                ob_arc.get_mid(),
-                arc_bp50,
-                arc_ap50,
+                ob_ban.get_mid(),
+                ban_bp50,
+                ban_ap50,
                 None, None, None
             ])
                         
