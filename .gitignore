@@ -7,3 +7,5 @@ data/*
 market_neutral/*
 gio/historic_bybit/*
 Simulation/__pycache__/*
+graphs/*
+experiments/*

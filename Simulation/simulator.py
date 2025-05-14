@@ -6,8 +6,8 @@ import os
 import csv
 from datetime import datetime
 
-from OrderBook import OrderBook
-from Trades import Trades
+from .orderBook import OrderBook
+from .trades import Trades
 from tqdm import tqdm
 
 import heapq
@@ -19,7 +19,7 @@ class Listener:
         self.category = category
 
     def packets_iter(self):
-        if self.category in ['OB1', 'OB50']:
+        if self.category in ['OB1', 'OB500']:
             with open(self.file_path, 'r') as file:
                 for line in file:
                     try:
@@ -92,7 +92,7 @@ class Simulator:
                 self.state.orderbooks[symbol].update(packet)
                 should_process = self.state.orderbooks[symbol].has_new_mid()
 
-            elif packet['category'] in ['OB50']:
+            elif packet['category'] in ['OB500']:
                 self.state.orderbooks[symbol].update(packet)
 
             elif packet['category'] == 'trades':
@@ -135,8 +135,12 @@ class DataLogger:
         self.output_file.write(header_line)
         # print(dir(self.output_file))
     
+    @staticmethod
+    def format_number(x):
+        return f"{x:.6f}".rstrip('0').rstrip('.') if isinstance(x, (int, float)) else str(x)
+        
     def add_line(self, outputs):
-        outputs = ["" if x is None else f"{x}" for x in outputs]
+        outputs = ["" if x is None else self.format_number(x) for x in outputs]
         line = ','.join(outputs)+"\n"
         self.output_file.write(line)
     
@@ -152,10 +156,10 @@ class DataLogger:
 if __name__ == "__main__":
     # DIR = 'gio/historic_bybit/historical_orderbook'
     DIR = 'data'
-    date = "20250302"
+    date = "20250308"
     symbols = [
-        'BANUSDT', 
-        'BANUSDT'
+        'HYPEUSDT', 
+        'HYPEUSDT'
     ]
     ob_symbols = symbols[:3]
     categories = [
@@ -164,29 +168,36 @@ if __name__ == "__main__":
     ]
     simulator = Simulator(DIR, date, symbols, categories, ob_symbols)
 
+    filename = get_filename(date, symbols, categories)
+
     dataLogger = DataLogger(
-        f'simulation_data/output_{date}.csv',
-        "time,ban_mid,ban_bp50,ban_ap50,ban_trade_side,ban_trade_size,ban_trade_price\n"
+        f'simulation_data/{filename}.csv',
+        "time,mid," + 
+        "bidsize_1," + "bidsize_5," + "bidsize_10," + "bidsize_20," + "bidsize_40," +
+        "asksize_1," + "asksize_5," + "asksize_10," + "asksize_20," + "asksize_40," +
+        "trade_side,trade_size,trade_price\n"
     )
     def process(state, is_trade):
         # state.print()
         # ob_btc = state.orderbooks['BTCUSDT']
         # ob_eth = state.orderbooks['ETHUSDT']
-        ob_ban = state.orderbooks['BANUSDT']
-
+        ob1 = state.orderbooks['HYPEUSDT']
         if is_trade:
             dataLogger.add_line([
                 state.time,
-                None, None, None, None, None,
+                None, 
+                None, None, None, None, None, 
+                None, None, None, None, None, 
                 *state.trades.last_trade
             ])
         else:
-            ban_bp50, ban_ap50 = ob_ban.get_size_price(50.0)
+            # bp50, ap50 = ob1.get_size_price(50.0)
+            bid_size_list, ask_size_list = ob1.get_bps_size([1, 5, 10, 20, 40])
             dataLogger.add_line([
                 state.time,
-                ob_ban.get_mid(),
-                ban_bp50,
-                ban_ap50,
+                ob1.get_mid(),
+                *bid_size_list,
+                *ask_size_list,
                 None, None, None
             ])
                         

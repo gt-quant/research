@@ -21,6 +21,7 @@ def download_and_save_data(url, ticker, date, save_directory):
                     f.write(data_content)
                 
                 print(f"Saved {ticker} data for {date}")
+                print(save_path)
             else:
                 print(f"No .data file found in the zip for {ticker} on {date}")
     except Exception as e:
@@ -57,11 +58,11 @@ def download_orderbook_data(start_date, end_date, symbols, save_directory):
                 print(f"Downloading {symbol} data for {date_str}...")
                 download_and_save_data(download_url, symbol, date_str, save_directory)
             else:
-                print(f"Data for {symbol} on {date_str} already exists. Skipping download.")
+                print(f"OB data for {symbol} on {date_str} already exists. Skipping download.")
 
 if __name__ == "__main__":
-    start_date = datetime(2025, 3, 2)
-    end_date = datetime(2025, 3, 3)
-    symbols = ['BANUSDT']
+    start_date = datetime(2025, 4, 8)
+    end_date = datetime(2025, 4, 8)
+    symbols = ['NEARUSDT']
     save_directory = "data/OB500"
     download_orderbook_data(start_date, end_date, symbols, save_directory)

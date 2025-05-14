@@ -12,9 +12,9 @@ class OrderBook():
         self._has_new_mid = False
         self.mid = None
     
-    # def print(self):
-    #     print("ASKS:", list(self.asks.items()))
-    #     print("BIDS:", list(self.bids.items()))
+    def print(self):
+        print("ASKS:", list(self.asks.items())[:10])
+        print("BIDS:", list(self.bids.items())[-1:-10:-1])
 
     def process_snapshot(self, snapshot):
         """
@@ -103,6 +103,52 @@ class OrderBook():
                 break
 
         return bid_size_price, ask_size_price
+    
+    def get_bps_size(self, bps_list):
+        mid = self.get_mid()
+        if mid is None:
+            return [None] * len(bps_list), [None] * len(bps_list)
+
+        # bid, ask
+        bid_size_list = []
+        bid_price_list = []
+        bid_cum_size = 0
+        bps_list_ptr = 0
+        old_price = mid
+        for i in range(-1, -len(self.bids), -1):
+            price, size = self.bids.peekitem(i)
+            bps = (mid - price) / mid * 10000.0
+
+            if bps > bps_list[bps_list_ptr]:
+                bid_size_list.append(bid_cum_size)
+                bid_price_list.append(old_price)
+                if bps_list_ptr == len(bps_list) - 1:
+                    break
+                bps_list_ptr += 1
+            bid_cum_size += size
+            old_price = price
+        
+        ask_size_list = []
+        ask_price_list = []
+        ask_cum_size = 0        
+        bps_list_ptr = 0
+        old_price = mid
+        for price, size in self.asks.items():
+            bps = (price - mid) / mid * 10000.0
+            if bps > bps_list[bps_list_ptr]:
+                ask_size_list.append(ask_cum_size)
+                ask_price_list.append(old_price)
+                if bps_list_ptr == len(bps_list) - 1:
+                    break
+                bps_list_ptr += 1
+            ask_cum_size += size
+            old_price = price
+        
+        # self.print()
+        # print(bid_size_list)
+        # print(ask_size_list)
+
+        return bid_size_list, ask_size_list, bid_price_list, ask_price_list
     
     def print_best_bid_ask(self):
         best_bid = self.get_best_bid()

@@ -63,7 +63,7 @@ def get_symbols():
         print(f"Error fetching symbols: {str(e)}")
         return []
 
-def download_orderbook_data(start_date, end_date, symbols, save_directory):
+def download_trades_data(start_date, end_date, symbols, save_directory):
     # save_directory = "test_historical_orderbook"
     # symbols = get_symbols()
     # Use specific symbols for testing
@@ -83,11 +83,11 @@ def download_orderbook_data(start_date, end_date, symbols, save_directory):
                 print(f"Downloading {symbol} data for {date_str}...")
                 download_and_save_data(download_url, symbol, date_str, save_directory)
             else:
-                print(f"Data for {symbol} on {date_str} already exists. Skipping download.")
+                print(f"Trades data for {symbol} on {date_str} already exists. Skipping download.")
 
 if __name__ == "__main__":
-    start_date = datetime(2025, 3, 2)
-    end_date = datetime(2025, 3, 3)
-    symbols = ['BANUSDT']
+    start_date = datetime(2025, 4, 8)
+    end_date = datetime(2025, 4, 8)
+    symbols = ['NEARUSDT']
     save_directory = "data/trades"
-    download_orderbook_data(start_date, end_date, symbols, save_directory)
+    download_trades_data(start_date, end_date, symbols, save_directory)
